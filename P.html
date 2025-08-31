@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>📍$TRACKER</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: #000;
+      color: #333;
+      overflow-x: hidden;
+    }
+
+    /* Background video */
+    #bgVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 100%;
+      min-height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4); /* dark overlay for contrast */
+      z-index: -1;
+    }
+
+    /* Container styles */
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      padding: 30px 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+      color: #00796b;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      transition: border-color 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"]:focus {
+      border-color: #00796b;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #00796b;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #004d40;
+    }
+
+    #result {
+      margin-top: 30px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    #result p {
+      margin-bottom: 10px;
+    }
+
+    #map {
+      width: 100%;
+      height: 350px;
+      margin-top: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #ddd;
+      position: relative;
+      z-index: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🎬 Full-screen video background -->
+  <video autoplay muted loop playsinline id="bgVideo">
+    <source src="background.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Optional dark overlay -->
+  <div class="overlay"></div>
+
+  <!-- 📱 Main UI -->
+  <div class="container">
+    <h2>📍$TRACKER</h2>
+    <input type="text" id="phoneInput" placeholder="Enter phone number (e.g. +14158586273)" />
+    <button onclick="lookupNumber()">🔍 Lookup Number</button>
+
+    <div id="result"></div>
+    <div id="map"></div>
+  </div>
+
+  <div class="footer">Made with ❤️ for educational purposes</div>
+
+  <!-- 📜 Scripts -->
+  <script>
+    async function lookupNumber() {
+      const phone = document.getElementById("phoneInput").value;
+      const apiKey = "e5c75b2c00c80046d53270efa8ec5518"; // Replace with your Numverify API key
+
+      const response = await fetch(`https://apilayer.net/api/validate?access_key=${apiKey}&number=${encodeURIComponent(phone)}`);
+      const data = await response.json();
+
+      if (data.valid) {
+        const location = `${data.location}, ${data.country_name}`;
+        document.getElementById("result").innerHTML = `
+          <p><strong>Country:</strong> ${data.country_name}</p>
+          <p><strong>Location:</strong> ${data.location}</p>
+          <p><strong>Carrier:</strong> ${data.carrier}</p>
+          <p><strong>Line Type:</strong> ${data.line_type}</p>
+        `;
+        geocodeLocation(location);
+      } else {
+        document.getElementById("result").innerHTML = `<p>❌ Invalid phone number.</p>`;
+        document.getElementById("map").innerHTML = '';
+      }
+    }
+
+    function geocodeLocation(location) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address: location }, function(results, status) {
+        if (status === 'OK') {
+          const map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 10,
+            center: results[0].geometry.location
+          });
+
+          new google.maps.Marker({
+            map: map,
+            position: results[0].geometry.location
+          });
+        } else {
+          document.getElementById('map').innerHTML = '<p>📍 Unable to show map for this location.</p>';
+        }
+      });
+    }
+  </script>
+
+  <!-- Google Maps API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA-deq29HK9rvV9dVDFsnlk50pWfIvxvnk"></script>
+</body>
+</html>
